@@ -82,6 +82,20 @@ public class OdometerService extends Service {
 
     //метод getDistance() пока что возвращает случайное число
     public double getDistance() {
-        return random.nextDouble();
+        //return random.nextDouble();
+        return distance;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (locManager != null && listener != null) {
+            if (ContextCompat.checkSelfPermission(this, PERMISSION_STRING)
+                    == PackageManager.PERMISSION_GRANTED) {
+                locManager.removeUpdates(listener);
+            }
+            locManager = null;
+            listener = null;
+        }
     }
 }
