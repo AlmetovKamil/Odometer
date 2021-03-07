@@ -46,4 +46,13 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, OdometerService.class);
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (bound) {
+            unbindService(connection);
+            bound = false;
+        }
+    }
 }
