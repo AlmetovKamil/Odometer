@@ -23,6 +23,10 @@ public class OdometerService extends Service {
     private LocationManager locManager;
     //Строка разрешения в виде константы
     public static final String PERMISSION_STRING = android.Manifest.permission.ACCESS_FINE_LOCATION;
+    //Расстояние и последнее местонахождение пользователя хранится
+    // в статических переменных, чтобы их значения сохранялись при уничтожении службы
+    private static double distance;
+    private static Location lastLocation = null;
 
     //При создании связанной службы необходимо предоставить реализацию Binder
     public class OdometerBinder extends Binder {
@@ -43,6 +47,13 @@ public class OdometerService extends Service {
             @Override
             public void onLocationChanged(Location location) {
                 //Отслеживание расстояния, пройденного пользователем
+                if (lastLocation == null) {
+                    //Задает исходное местонахождение пользователя
+                    lastLocation = location;
+                }
+                //Обновляет пройденное расстояние и последнее местонахождение пользователя
+                distance += location.distanceTo(lastLocation);
+                lastLocation = location;
             }
 
             //Эти медоты не используются в коде, но они должны быть объявлены
