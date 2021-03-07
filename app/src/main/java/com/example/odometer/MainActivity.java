@@ -9,11 +9,20 @@ import android.os.IBinder;
 
 public class MainActivity extends AppCompatActivity {
 
+    //ссылка на службу
+    private OdometerService odometer;
+
+    //признак связывания с активностью
+    private boolean bound = false;
+
     //Создание объекта ServiceConnection
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             //Код, выполняемый при связывании со службой
+            OdometerService.OdometerBinder odometerBinder = (OdometerService.OdometerBinder) service;
+            odometer = odometerBinder.getOdometer();
+            bound = true;
         }
 
         @Override
