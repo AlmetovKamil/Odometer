@@ -2,13 +2,19 @@ package com.example.odometer;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -18,6 +24,7 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String CHANNEL_ID = "fine_location_permission";
     //ссылка на службу
     private OdometerService odometer;
 
@@ -43,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
 
     //Значение, используемое для кода запроса разрешения (произвольное)
     private final int PERMISSION_REQUEST_CODE = 698;
+
+    private final int NOTIFICATION_ID = 423;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,8 +113,49 @@ public class MainActivity extends AppCompatActivity {
                     bindService(intent, connection, Context.BIND_AUTO_CREATE);
                 } else {
                     //Код, выполняемый, если разрешение не предоставлено
+
+                    //Создания канала уведомлений
+                    createNotificationChannel();
+                    //Создание действия
+                    Intent actionIntent = new Intent(this, MainActivity.class);
+                    PendingIntent actionPendingIntent = PendingIntent.getActivity(
+                            this,
+                            0,
+                            actionIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT);
+                    //Создание уведомления
+                    Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                            //настройки, необходимые для всех уведомлений
+                            .setSmallIcon(android.R.drawable.ic_menu_compass)
+                            .setContentTitle(getResources().getString(R.string.app_name))
+                            .setContentText(getResources().getString(R.string.permission_denied))
+                            //максимальный приоритет уведомления - оно будет находиться в самом верху списка
+                            .setPriority(NotificationCompat.PRIORITY_HIGH)
+                            //установить паттерн вибрации
+                            .setVibrate(new long[] {1000, 1000})
+                            //уведомление исчезнет после щелчка
+                            .setAutoCancel(true)
+                            //добавление отложенного интента к уведомлению
+                            .setContentIntent(actionPendingIntent)
+                            .build();
+                    //Выдача уведомления
+                    NotificationManager notificationManager =
+                            (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    notificationManager.notify(NOTIFICATION_ID, notification);
                 }
             }
+        }
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
         }
     }
 
