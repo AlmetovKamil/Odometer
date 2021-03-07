@@ -91,4 +91,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    //Возвращает результаты запросов разрешений
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_CODE: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Intent intent = new Intent(this, OdometerService.class);
+                    bindService(intent, connection, Context.BIND_AUTO_CREATE);
+                } else {
+                    //Код, выполняемый, если разрешение не предоставлено
+                }
+            }
+        }
+    }
+
 }
